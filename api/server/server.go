@@ -2,13 +2,13 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 )
 
 func Run(port int) {
 	mux := http.NewServeMux()
 	container := NewContainer()
+	logger := container.Logger
 	address := fmt.Sprintf("%s:%d", container.HttpAddr, port)
 
 	router := Route(mux, container)
@@ -20,8 +20,8 @@ func Run(port int) {
 		Handler: router,
 	}
 
-	log.Printf("Server is starting on: %s", address)
+	logger.Infof("Server is starting on: %s", address)
 	if err := srv.ListenAndServe(); err != nil {
-		log.Fatal(err)
+		logger.Fatalf("Server start failed: %s", err)
 	}
 }

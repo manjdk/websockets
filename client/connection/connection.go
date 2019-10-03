@@ -2,7 +2,6 @@ package connection
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/manjdk/websockets/api/server"
 	"github.com/manjdk/websockets/ws/usecase"
@@ -11,13 +10,14 @@ import (
 
 func Dial(port int) {
 	container := server.NewContainer()
+
 	conn, err := newConnection(container.HttpAddr, port)
 	if err != nil {
-		log.Fatal(err)
+		container.Logger.Fatalf("Failed to initialize connection: %s", err)
 	}
 	defer conn.Close()
 
-	connectionUseCase := usecase.NewConnectionUseCase(conn)
+	connectionUseCase := usecase.NewConnectionUseCase(conn, container.Logger)
 	connectionUseCase.Start()
 }
 

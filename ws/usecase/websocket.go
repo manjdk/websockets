@@ -1,20 +1,22 @@
 package usecase
 
 import (
-	"log"
 	"strings"
 
 	"github.com/manjdk/websockets/ws"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/websocket"
 )
 
 type WebSocketUseCase struct {
-	Hub *ws.Hub
+	Hub    *ws.Hub
+	Logger *logrus.Logger
 }
 
-func NewWebSocketUseCase(hub *ws.Hub) WebSocketUseCase {
+func NewWebSocketUseCase(hub *ws.Hub, logger *logrus.Logger) WebSocketUseCase {
 	return WebSocketUseCase{
-		Hub: hub,
+		Hub:    hub,
+		Logger: logger,
 	}
 }
 
@@ -39,22 +41,24 @@ func (w *WebSocketUseCase) RemoveClient(conn *websocket.Conn) {
 
 func (w *WebSocketUseCase) AddClient(conn *websocket.Conn) {
 	w.Hub.Client[conn.RemoteAddr().String()] = conn
-	w.send(conn, ws.NewMessage("Hello from server"))
+
+	if err := send(conn, ws.NewMessage("Hello from server")); err != nil {
+		w.Logger.Errorf("Failed to send welcome message: %s", err)
+	}
 }
 
 func (w *WebSocketUseCase) SendMessage(message *ws.Message) {
-	log.Printf("Message received: %s", message.Text)
+	w.Logger.Infof("Message received: %s", message.Text)
 
 	for _, client := range w.Hub.Client {
-		message.Text = strings.ReplaceAll(message.Text, "?", "!")
+		message.Text = replaceQuestionToExclamation(message.Text)
 
-		w.send(client, message)
+		if err := send(client, message); err != nil {
+			w.Logger.Errorf("Failed to send message: %s", err)
+		}
 	}
 }
 
-func (w *WebSocketUseCase) send(conn *websocket.Conn, message *ws.Message) {
-	if err := websocket.JSON.Send(conn, message); err != nil {
-		log.Println("Error broadcasting message: ", err)
-		return
-	}
+func replaceQuestionToExclamation(text string) string {
+	return strings.ReplaceAll(text, "?", "!")
 }

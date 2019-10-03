@@ -3,20 +3,22 @@ package usecase
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/manjdk/websockets/ws"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/websocket"
 )
 
 type ConnectionUseCase struct {
-	Conn *websocket.Conn
+	Conn   *websocket.Conn
+	Logger *logrus.Logger
 }
 
-func NewConnectionUseCase(conn *websocket.Conn) ConnectionUseCase {
+func NewConnectionUseCase(conn *websocket.Conn, logger *logrus.Logger) ConnectionUseCase {
 	return ConnectionUseCase{
-		Conn: conn,
+		Conn:   conn,
+		Logger: logger,
 	}
 }
 
@@ -31,7 +33,7 @@ func (c *ConnectionUseCase) receiveMessages() {
 	go func() {
 		for {
 			if err := websocket.JSON.Receive(c.Conn, message); err != nil {
-				log.Println("Error receiving message: ", err.Error())
+				c.Logger.Errorf("Error receiving message: %s", err)
 				break
 			}
 
@@ -48,15 +50,11 @@ func (c *ConnectionUseCase) scanAndSendMessage() {
 			continue
 		}
 
-		if err := c.sendToServer(text); err != nil {
-			log.Println("Error sending message: ", err.Error())
+		message := ws.NewMessage(text)
+
+		if err := send(c.Conn, message); err != nil {
+			c.Logger.Errorf("Error sending message: %s", err)
 			break
 		}
 	}
-}
-
-func (c *ConnectionUseCase) sendToServer(text string) error {
-	message := ws.NewMessage(text)
-
-	return websocket.JSON.Send(c.Conn, message)
 }
