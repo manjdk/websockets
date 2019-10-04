@@ -37,14 +37,6 @@
   version = "v1.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:2bdc5ebd6752691f2df7ec090275d12bf6c884ae386c3095d5d32457d5f3ca78"
-  name = "github.com/joho/godotenv"
-  packages = ["."]
-  pruneopts = ""
-  revision = "5c0e6c6ab1a0a9ef0a8822cba3a05d62f7dad941"
-
-[[projects]]
   digest = "1:0f51cee70b0d254dbc93c22666ea2abf211af81c1701a96d04e2284b408621db"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
@@ -186,7 +178,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/joho/godotenv",
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
